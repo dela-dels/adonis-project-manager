@@ -12,8 +12,7 @@ const createPostSchema = schema.create({
 })
 
 export default class ProjectsController {
-  public async index({ request, response }: HttpContextContract) {
-    Logger.info('Getting a list of all projects %o', { request: request.all() })
+  public async index({ response }: HttpContextContract) {
     response.json({
       status: 'Successful',
       data: await Project.query().paginate(1, 10),
@@ -21,7 +20,7 @@ export default class ProjectsController {
   }
 
   public async store({ request, response }: HttpContextContract) {
-    Logger.info('creating a new project with the following details', request.body())
+    Logger.info(request.body(), 'creating a new project with the following details')
 
     const payload = await request.validate({ schema: createPostSchema })
 
