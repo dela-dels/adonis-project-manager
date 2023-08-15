@@ -27,10 +27,8 @@ Route.get('/', async () => {
 Route.post('auth/register', 'RegisterController')
 Route.post('auth/login', 'LoginController')
 
-/**
- * We can't call the middleware('auth') directly on the resource api route declaration.
- * Below is a hacky way to apply the middleware by grouping the resource route.
- */
-Route.group(() => {
-  Route.resource('projects', 'ProjectsController').apiOnly()
-}).middleware('auth')
+Route.resource('projects', 'ProjectsController')
+  .apiOnly()
+  .middleware({
+    '*': ['auth'],
+  })
