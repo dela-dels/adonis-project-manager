@@ -12,7 +12,7 @@ export default class LoginController {
     try {
       const payload = await request.validate({ schema: loginSchema })
       const token = await auth.use('api').attempt(payload.email, payload.password, {
-        expiresIn: '15 mins',
+        expiresIn: '200 mins',
       })
 
       const user = await User.findBy('email', payload.email)

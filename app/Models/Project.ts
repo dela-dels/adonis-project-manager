@@ -1,8 +1,7 @@
 import { DateTime } from 'luxon'
 import { BaseModel, BelongsTo, beforeCreate, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
-// import { uuid } from 'uuidv4'
 import User from './User'
-import { v4 as uuid_v4 } from 'uuid'
+import { v4 as uuid } from 'uuid'
 
 export default class Project extends BaseModel {
   @column({ isPrimary: true })
@@ -13,19 +12,29 @@ export default class Project extends BaseModel {
 
   @beforeCreate()
   public static assignUuid(project: Project) {
-    project.uuid = uuid_v4()
+    project.uuid = uuid()
   }
 
   @column()
   public name: string
 
-  @column()
+  @column.dateTime({
+    serializeAs: 'startDate',
+    serialize: (value: DateTime | null) => {
+      return value ? value.toISO() : value
+    },
+  })
   public startDate: DateTime
 
-  @column()
+  @column.dateTime({
+    serializeAs: 'endDate',
+    serialize: (value: DateTime | null) => {
+      return value ? value.toISO() : value
+    },
+  })
   public endDate: DateTime
 
-  @column()
+  @column({ serializeAs: null })
   public createdBy: number
 
   @column()
@@ -34,11 +43,17 @@ export default class Project extends BaseModel {
   @belongsTo(() => User, {
     foreignKey: 'createdBy',
   })
-  public project: BelongsTo<typeof User>
+  public user: BelongsTo<typeof User>
 
-  @column.dateTime({ autoCreate: true })
+  @column.dateTime({
+    autoCreate: true,
+    serializeAs: 'createdOn',
+    serialize: (value: DateTime | null) => {
+      return value ? value.toISO() : value
+    },
+  })
   public createdAt: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: null })
   public updatedAt: DateTime
 }

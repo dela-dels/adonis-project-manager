@@ -1,7 +1,15 @@
 import { DateTime } from 'luxon'
 import { uuid } from 'uuidv4'
-import { BaseModel, beforeCreate, beforeSave, column } from '@ioc:Adonis/Lucid/Orm'
+import {
+  BaseModel,
+  HasMany,
+  beforeCreate,
+  beforeSave,
+  column,
+  hasMany,
+} from '@ioc:Adonis/Lucid/Orm'
 import Hash from '@ioc:Adonis/Core/Hash'
+import Project from './Project'
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
@@ -22,10 +30,10 @@ export default class User extends BaseModel {
     }
   }
 
-  @column.dateTime({ autoCreate: true })
+  @column.dateTime({ autoCreate: true, serializeAs: null })
   public createdAt: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: null })
   public updatedAt: DateTime
 
   @column()
@@ -37,6 +45,9 @@ export default class User extends BaseModel {
   @column({ serializeAs: null })
   public password: string
 
-  @column()
+  @column({ serializeAs: 'mobileNumber' })
   public mobileNumber: string
+
+  @hasMany(() => Project)
+  public projects: HasMany<typeof Project>
 }

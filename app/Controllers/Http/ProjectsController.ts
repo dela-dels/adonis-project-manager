@@ -1,44 +1,36 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Logger from '@ioc:Adonis/Core/Logger'
 import CreateProjectAction from 'App/Actions/CreateProjectAction'
-import { schema } from '@ioc:Adonis/Core/Validator'
+import { schema, rules } from '@ioc:Adonis/Core/Validator'
 import Project from 'App/Models/Project'
 
 const createPostSchema = schema.create({
-  name: schema.string(),
-  startedAt: schema.date(),
-  endsAt: schema.date(),
-  createdBy: schema.number(),
+  name: schema.string({}, [rules.required(), rules.unique({ table: 'projects', column: 'name' })]),
+  startedAt: schema.date({}, [rules.required()]),
+  endsAt: schema.date({}, [rules.required()]),
 })
 
 export default class ProjectsController {
   public async index({ response }: HttpContextContract) {
     response.json({
       status: 'Successful',
-      data: await Project.query().paginate(1, 10),
+      data: (await Project.query().preload('user').paginate(1, 10)).serialize(),
     })
   }
 
-  public async store({ request, response }: HttpContextContract) {
+  public async store({ request, auth, response }: HttpContextContract) {
     Logger.info(request.body(), 'creating a new project with the following details')
-
-    const payload = await request.validate({ schema: createPostSchema })
+    let payload = await request.validate({ schema: createPostSchema })
 
     try {
-      const project = await new CreateProjectAction().execute(payload)
+      const project = await new CreateProjectAction().execute(payload, auth.user)
 
       response.json({
         status: 'Successful',
-        data: {
-          id: project.uuid,
-          name: project.name,
-          startsOn: project.startDate,
-          endsOn: project.endDate,
-          ended: false, //TODO: change this to reflect if the end date is in the past or future
-          projectCode: 'CHAPP',
-        },
+        data: project.serialize(),
       })
     } catch (error) {
+      Logger.error(error, 'error occurred trying to create new project')
       response.status(500)
       response.json({
         status: 'Failed',
